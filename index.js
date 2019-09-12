@@ -1,3 +1,16 @@
+/* 
+ * Slackbot to send surveys to students and collect feedback on courses
+ * by Forrest Feaser
+ * for HackCville, Inc.
+ * 9/12/2019
+ */
+
+// TODO: add error catching
+// TODO: schedule messaging
+// TODO: process data from dialog (store in database)
+// TODO: automate the configuration of scheduling and recipients of messages
+// TODO: integrate with HackCville servers/website/Slack
+
 require('dotenv').config();
 
 const bot_token = process.env.SLACK_BOT_TOKEN;
@@ -8,27 +21,25 @@ const { WebClient } = require('@slack/web-api');
 const { createEventAdapter } = require('@slack/events-api');
 const { createMessageAdapter } = require('@slack/interactive-messages');
 
-const port = process.env.PORT || 3000;
-
 const slackEvents = createEventAdapter(signing_secret);
 const slackInteractions = createMessageAdapter(signing_secret);
 const web = new WebClient(bot_token);
 
+const port = process.env.PORT || 3000;
 const app = express();
 
 app.use('/slack/events', slackEvents.requestListener());
 app.use('/slack/actions', slackInteractions.requestListener());
 
 app.listen(port, () => {
-    console.log(`Listening for events on port ${port}...`);
+    console.log(`Listening for actions/events on port ${port}...`);
   });
 
 // https://api.slack.com/events/app_mention
 slackEvents.on('app_mention', (event) => {
-    
-    //console.log(`Received a message event: user ${event.user} in channel ${event.channel} says ${event.text}`);
 
-    bot_response_message = {
+    // Template for initialze message with button to survey
+    bot_feedback_message = {
       token: bot_token,
       channel: event.channel, 
       text: `Hey <@${event.user}>`, 
@@ -53,18 +64,16 @@ slackEvents.on('app_mention', (event) => {
 
     (async () => {
         // https://api.slack.com/methods/chat.postMessage
-        const res1 = await web.chat.postMessage(bot_response_message);
-
-        //console.log('Message sent: ', res.ts);
-
+        const res = await web.chat.postMessage(bot_feedback_message);
       })();
 
   });
 
 slackInteractions.action({type: 'button'}, (payload) => {
 
-    console.log(payload); //for debugging
+    console.log(payload);
 
+    // Template for feedback form dialog
     const feedback_dialog = {
       token: process.env.SLACK_BOT_TOKEN,
       trigger_id: payload.trigger_id,
@@ -104,17 +113,25 @@ slackInteractions.action({type: 'button'}, (payload) => {
 
     (async () => {
         // https://api.slack.com/methods/dialog.open
-        const res1 = await web.dialog.open(feedback_dialog);
-
-        //do something
-
+        const res = await web.dialog.open(feedback_dialog);
       })();
 
   });
 
 slackInteractions.action({type: 'dialog_submission'}, (payload, respond) => {
-    // Handle dialog submission
+    
+    // Process the dialog reponse in payload.submission
+
+    bot_response_message = {
+      token: bot_token,
+      channel: payload.channel.id, 
+      text: `Thanks! <@${payload.user.id}>`, 
+      link_names: true,
+    };
+
+    (async () => {
+        // https://api.slack.com/methods/chat.postMessage
+        const res = await web.chat.postMessage(bot_response_message)
+      })();
+
   });
-  
-// Handle errors (see `errorCodes` export)
-slackEvents.on('error', console.error);
