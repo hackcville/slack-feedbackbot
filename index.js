@@ -13,17 +13,24 @@
 
 require('dotenv').config();
 
-const bot_token = process.env.SLACK_BOT_TOKEN;
-const signing_secret = process.env.SLACK_SIGNING_SECRET;
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
+const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
+const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+
+var Airtable = require('airtable');
+var base = new Airtable({apiKey: AIRTABLE_API_KEY}).base(AIRTABLE_BASE_ID);
+
+const table_name = 'Table 1';
 
 const express = require('express');
 const { WebClient } = require('@slack/web-api');
 const { createEventAdapter } = require('@slack/events-api');
 const { createMessageAdapter } = require('@slack/interactive-messages');
 
-const slackEvents = createEventAdapter(signing_secret);
-const slackInteractions = createMessageAdapter(signing_secret);
-const web = new WebClient(bot_token);
+const slackEvents = createEventAdapter(SLACK_SIGNING_SECRET);
+const slackInteractions = createMessageAdapter(SLACK_SIGNING_SECRET);
+const web = new WebClient(SLACK_BOT_TOKEN);
 
 const port = process.env.PORT || 3000;
 const app = express();
@@ -38,9 +45,9 @@ app.listen(port, () => {
 // https://api.slack.com/events/app_mention
 slackEvents.on('app_mention', (event) => {
 
-    // Template for initialze message with button to survey
+    // Template to create message with button to survey
     bot_feedback_message = {
-      token: bot_token,
+      token: SLACK_BOT_TOKEN,
       channel: event.channel, 
       text: `Hey <@${event.user}>`, 
       link_names: true,
@@ -71,11 +78,9 @@ slackEvents.on('app_mention', (event) => {
 
 slackInteractions.action({type: 'button'}, (payload) => {
 
-    console.log(payload);
-
     // Template for feedback form dialog
     const feedback_dialog = {
-      token: process.env.SLACK_BOT_TOKEN,
+      token: SLACK_BOT_TOKEN,
       trigger_id: payload.trigger_id,
       dialog: JSON.stringify({
         title: 'Feedback Form',
@@ -119,11 +124,26 @@ slackInteractions.action({type: 'button'}, (payload) => {
   });
 
 slackInteractions.action({type: 'dialog_submission'}, (payload, respond) => {
-    
+
+    console.log(payload);
+
     // Process the dialog reponse in payload.submission
+    base(table_name).create([
+      {
+        fields: {
+          'Name': payload.user.name, 
+          'Slack Handle': payload.user.id,
+          'Submission': payload.submission.feedback
+        }
+      }
+    ], function(err) {
+      if (err) {
+        console.error(err);
+      }
+    });
 
     bot_response_message = {
-      token: bot_token,
+      token: SLACK_BOT_TOKEN,
       channel: payload.channel.id, 
       text: `Thanks! <@${payload.user.id}>`, 
       link_names: true,
