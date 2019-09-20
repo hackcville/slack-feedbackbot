@@ -1,15 +1,10 @@
 /* 
- * Slackbot to send surveys to students and collect feedback on courses
+ * index.js
+ * Server to recieve events/actions from Slack and send surveys and record responses
  * by Forrest Feaser
  * for HackCville, Inc.
  * 9/12/2019
  */
-
-// TODO: add error catching
-// TODO: schedule messaging
-// TODO: process data from dialog (store in database)
-// TODO: automate the configuration of scheduling and recipients of messages
-// TODO: integrate with HackCville servers/website/Slack
 
 require('dotenv').config();
 
@@ -46,7 +41,7 @@ app.listen(port, () => {
 slackEvents.on('app_mention', (event) => {
 
     // Template to create message with button to survey
-    bot_feedback_message = {
+    const bot_feedback_message = {
       token: SLACK_BOT_TOKEN,
       channel: event.channel, 
       text: `Hey <@${event.user}>`, 
@@ -71,7 +66,11 @@ slackEvents.on('app_mention', (event) => {
 
     (async () => {
         // https://api.slack.com/methods/chat.postMessage
-        const res = await web.chat.postMessage(bot_feedback_message);
+        const res = await web.chat.postMessage(bot_feedback_message)
+          .catch(err => {
+            console.log(err);
+            console.log(res);
+          });
       })();
 
   });
@@ -118,7 +117,11 @@ slackInteractions.action({type: 'button'}, (payload) => {
 
     (async () => {
         // https://api.slack.com/methods/dialog.open
-        const res = await web.dialog.open(feedback_dialog);
+        const res = await web.dialog.open(feedback_dialog)
+          .catch(err => {
+              console.log(err);
+              console.log(res);
+          });
       })();
 
   });
@@ -152,6 +155,10 @@ slackInteractions.action({type: 'dialog_submission'}, (payload, respond) => {
     (async () => {
         // https://api.slack.com/methods/chat.postMessage
         const res = await web.chat.postMessage(bot_response_message)
+          .catch(err => {
+            console.log(err);
+            console.log(res);
+          });
       })();
 
   });
