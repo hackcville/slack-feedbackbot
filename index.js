@@ -1,15 +1,10 @@
 /* 
- * Slackbot to send surveys to students and collect feedback on courses
+ * index.js
+ * Server to recieve events/actions from Slack and send surveys and record responses
  * by Forrest Feaser
  * for HackCville, Inc.
  * 9/12/2019
  */
-
-// TODO: add error catching
-// TODO: schedule messaging
-// TODO: process data from dialog (store in database)
-// TODO: automate the configuration of scheduling and recipients of messages
-// TODO: integrate with HackCville servers/website/Slack
 
 require('dotenv').config();
 
@@ -43,10 +38,9 @@ app.listen(port, () => {
   });
 
 // https://api.slack.com/events/app_mention
-slackEvents.on('app_mention', (event) => {
+slackEvents.on('app_mention', (event) => { // bot responds to Slack mentions with survey
 
-    // Template to create message with button to survey
-    bot_feedback_message = {
+    const bot_feedback_message = { // template for message with button to survey
       token: SLACK_BOT_TOKEN,
       channel: event.channel, 
       text: `Hey <@${event.user}>`, 
@@ -71,15 +65,17 @@ slackEvents.on('app_mention', (event) => {
 
     (async () => {
         // https://api.slack.com/methods/chat.postMessage
-        const res = await web.chat.postMessage(bot_feedback_message);
+        const res = await web.chat.postMessage(bot_feedback_message)
+          .catch(err => {
+            console.log(err);
+          });
       })();
 
   });
 
 slackInteractions.action({type: 'button'}, (payload) => {
 
-    // Template for feedback form dialog
-    const feedback_dialog = {
+    const feedback_dialog = {     // template for dialog with feedback form
       token: SLACK_BOT_TOKEN,
       trigger_id: payload.trigger_id,
       dialog: JSON.stringify({
@@ -118,17 +114,17 @@ slackInteractions.action({type: 'button'}, (payload) => {
 
     (async () => {
         // https://api.slack.com/methods/dialog.open
-        const res = await web.dialog.open(feedback_dialog);
+        const res = await web.dialog.open(feedback_dialog)
+          .catch(err => {
+              console.log(err);
+          });
       })();
 
   });
 
 slackInteractions.action({type: 'dialog_submission'}, (payload, respond) => {
 
-    console.log(payload);
-
-    // Process the dialog reponse in payload.submission
-    base(table_name).create([
+    base(table_name).create([ // process the dialog response into Airtable
       {
         fields: {
           'Name': payload.user.name, 
@@ -142,7 +138,7 @@ slackInteractions.action({type: 'dialog_submission'}, (payload, respond) => {
       }
     });
 
-    bot_response_message = {
+    bot_response_message = { // template for bot response to completed form
       token: SLACK_BOT_TOKEN,
       channel: payload.channel.id, 
       text: `Thanks! <@${payload.user.id}>`, 
@@ -152,6 +148,9 @@ slackInteractions.action({type: 'dialog_submission'}, (payload, respond) => {
     (async () => {
         // https://api.slack.com/methods/chat.postMessage
         const res = await web.chat.postMessage(bot_response_message)
+          .catch(err => {
+            console.log(err);
+          });
       })();
 
   });
