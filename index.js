@@ -38,10 +38,9 @@ app.listen(port, () => {
   });
 
 // https://api.slack.com/events/app_mention
-slackEvents.on('app_mention', (event) => {
+slackEvents.on('app_mention', (event) => { // bot responds to Slack mentions with survey
 
-    // Template to create message with button to survey
-    const bot_feedback_message = {
+    const bot_feedback_message = { // template for message with button to survey
       token: SLACK_BOT_TOKEN,
       channel: event.channel, 
       text: `Hey <@${event.user}>`, 
@@ -69,7 +68,6 @@ slackEvents.on('app_mention', (event) => {
         const res = await web.chat.postMessage(bot_feedback_message)
           .catch(err => {
             console.log(err);
-            console.log(res);
           });
       })();
 
@@ -77,8 +75,7 @@ slackEvents.on('app_mention', (event) => {
 
 slackInteractions.action({type: 'button'}, (payload) => {
 
-    // Template for feedback form dialog
-    const feedback_dialog = {
+    const feedback_dialog = {     // template for dialog with feedback form
       token: SLACK_BOT_TOKEN,
       trigger_id: payload.trigger_id,
       dialog: JSON.stringify({
@@ -120,7 +117,6 @@ slackInteractions.action({type: 'button'}, (payload) => {
         const res = await web.dialog.open(feedback_dialog)
           .catch(err => {
               console.log(err);
-              console.log(res);
           });
       })();
 
@@ -128,10 +124,7 @@ slackInteractions.action({type: 'button'}, (payload) => {
 
 slackInteractions.action({type: 'dialog_submission'}, (payload, respond) => {
 
-    console.log(payload);
-
-    // Process the dialog reponse in payload.submission
-    base(table_name).create([
+    base(table_name).create([ // process the dialog response into Airtable
       {
         fields: {
           'Name': payload.user.name, 
@@ -145,7 +138,7 @@ slackInteractions.action({type: 'dialog_submission'}, (payload, respond) => {
       }
     });
 
-    bot_response_message = {
+    bot_response_message = { // template for bot response to completed form
       token: SLACK_BOT_TOKEN,
       channel: payload.channel.id, 
       text: `Thanks! <@${payload.user.id}>`, 
@@ -157,7 +150,6 @@ slackInteractions.action({type: 'dialog_submission'}, (payload, respond) => {
         const res = await web.chat.postMessage(bot_response_message)
           .catch(err => {
             console.log(err);
-            console.log(res);
           });
       })();
 
