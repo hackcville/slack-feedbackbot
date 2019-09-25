@@ -14,44 +14,70 @@ const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_FALL_INVOLVEMENT_ID;
 var Airtable = require("airtable");
 var base = new Airtable({ apipKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
 
-var roster = {};
-var courses = [];
+var course_info = getCourses(base);
+var student_info = getStudents(base);
 
-base("Courses")
-  .select({
-    fields: ["Courses", "Section", "Day", "Meeting Time"]
+Promise.all([course_info, student_info])
+  .then(function(results) {
+    console.log(results);
+    console.log("all data has loaded");
   })
-  .eachPage(function page(records, fetchNextPAge) {
-    records.forEach(function(record) {
-      let course_section = record.get("Courses") + " " + record.get("Section");
-      let meeting_time = record.get("Day") + " " + record.get("Meeting Time");
-      courses.push(course_section);
-    });
+  .catch(function(err) {
+    console.log("one or more promises has failed: " + err);
   });
 
-base("Fall 2019 Involvement")
-  .select({
-    fields: ["Name", "Slack", "Fall Course Involvement - Section"],
-    filterByFormula:
-      "AND(NOT({Fall Course Involvement - Section} = 'Dropped Fall 2019'),NOT({Fall Course Involvement - Section} = ''))",
-    sort: [{ field: "Name", direction: "desc" }],
-    view: "Grid view"
-  })
-  .eachPage(
-    function page(records, fetchNextPage) {
-      records.forEach(function(record) {
-        let course = record.get("Fall Course Involvement - Section");
-        let slack = record.get("Slack");
-        let student = record.get("Name");
-        // roster[course][student] = slack;
-        console.log(roster);
-      });
-      fetchNextPage();
-    },
-    function done(err) {
-      if (err) {
-        console.error(err);
-        return;
+async function getCourses(base) {
+  var courses = [];
+  await base("Courses")
+    .select({
+      fields: ["Courses", "Section", "Day", "Meeting Time"]
+    })
+    .eachPage(
+      function page(records, fetchNextPage) {
+        records.forEach(function(record) {
+          let course_section =
+            record.get("Courses") + " " + record.get("Section");
+          let meeting_time =
+            record.get("Day") + " " + record.get("Meeting Time");
+          courses[course_section] = { time: meeting_time, students: [] };
+        });
+        fetchNextPage();
+      },
+      function done(err) {
+        if (err) {
+          console.error(err);
+          return;
+        } else {
+          return courses;
+        }
       }
-    }
-  );
+    );
+}
+
+async function getStudents(base) {
+  var students = {};
+  await base("Fall 2019 Involvement")
+    .select({
+      fields: ["Name", "Slack", "Fall Course Involvement - Section"],
+      filterByFormula:
+        "AND(NOT({Fall Course Involvement - Section} = 'Dropped Fall 2019'),NOT({Fall Course Involvement - Section} = ''))"
+    })
+    .eachPage(
+      function page(records, fetchNextPage) {
+        records.forEach(function(record) {
+          let course = record.get("Fall Course Involvement - Section");
+          let slack = record.get("Slack");
+          let student = record.get("Name");
+          students[student] = { slack: slack, course: course };
+        });
+        fetchNextPage();
+      },
+      function done(err) {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        return students;
+      }
+    );
+}
