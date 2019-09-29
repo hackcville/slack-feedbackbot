@@ -14,17 +14,23 @@ const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_FALL_INVOLVEMENT_ID;
 var Airtable = require("airtable");
 var base = new Airtable({ apipKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
 
-var course_info = getCourses(base);
-var student_info = getStudents(base);
+idk(base);
 
-Promise.all([course_info, student_info])
-  .then(function(results) {
-    console.log(results);
-    console.log("all data has loaded");
-  })
-  .catch(function(err) {
-    console.log("one or more promises has failed: " + err);
-  });
+async function idk(base) {
+  var course_info = await getCourses(base);
+  var student_info = await getStudents(base);
+  console.log(course_info);
+  console.log(student_info);
+}
+
+// Promise.all([course_info, student_info])
+//   .then(function(results) {
+//     console.log(results);
+//     console.log("all data has loaded");
+//   })
+//   .catch(function(err) {
+//     console.log("one or more promises has failed: " + err);
+//   });
 
 async function getCourses(base) {
   var courses = [];
