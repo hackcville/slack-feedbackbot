@@ -26,7 +26,8 @@ async function getCourses(base) {
         "Slack ID",
         "Day",
         "Meeting Time"
-      ]
+      ],
+      filterByFormula: "NOT({Course Title} = '')"
     })
     .eachPage(
       function page(records, fetchNextPage) {
@@ -34,13 +35,35 @@ async function getCourses(base) {
           let course = record.get("Course Title");
           let students = record.get("Enrolled Students");
           let slacks = record.get("Slack ID");
-          let meeting_time =
-            record.get("Day") + " " + record.get("Meeting Time");
+          let message_hour = record.get("Meeting Time").split("-")[1];
+          switch (record.get("Day")) {
+            case 0:
+              day = "Sunday";
+              break;
+            case 1:
+              day = "Monday";
+              break;
+            case 2:
+              day = "Tuesday";
+              break;
+            case 3:
+              day = "Wednesday";
+              break;
+            case 4:
+              day = "Thursday";
+              break;
+            case 5:
+              day = "Friday";
+              break;
+            case 6:
+              day = "Saturday";
+          }
+          let message_time = day + " " + message_hour;
           let entry = {
             course: course,
             student_names: students,
             slack_ids: slacks,
-            time: meeting_time
+            time: message_time
           };
           courses.push(entry);
         });
