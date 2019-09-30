@@ -14,7 +14,7 @@ const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_FALL_INVOLVEMENT_ID;
 var Airtable = require("airtable");
 var base = new Airtable({ apipKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
 
-getCourses(base);
+console.log(getCourses(base));
 
 async function getCourses(base) {
   var courses = [];
@@ -36,9 +36,9 @@ async function getCourses(base) {
           let message_time = formatDate(record.get("Day"), message_hour);
           let entry = {
             course: record.get("Course Title"),
-            student_names: record.get("Enrolled Students"),
-            slack_ids: record.get("Slack ID"),
-            time: message_time
+            // student_names: record.get("Enrolled Students"), //airtable id for each student (i think)
+            students: record.get("Slack ID"), //slack id for each enrolled student
+            time: message_time //formatted correctly
           };
           courses.push(entry);
         });
