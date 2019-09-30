@@ -32,37 +32,12 @@ async function getCourses(base) {
     .eachPage(
       function page(records, fetchNextPage) {
         records.forEach(function(record) {
-          let course = record.get("Course Title");
-          let students = record.get("Enrolled Students");
-          let slacks = record.get("Slack ID");
           let message_hour = record.get("Meeting Time").split("-")[1];
-          switch (record.get("Day")) {
-            case 0:
-              day = "Sunday";
-              break;
-            case 1:
-              day = "Monday";
-              break;
-            case 2:
-              day = "Tuesday";
-              break;
-            case 3:
-              day = "Wednesday";
-              break;
-            case 4:
-              day = "Thursday";
-              break;
-            case 5:
-              day = "Friday";
-              break;
-            case 6:
-              day = "Saturday";
-          }
-          let message_time = day + " " + message_hour;
+          let message_time = formatDate(record.get("Day"), message_hour);
           let entry = {
-            course: course,
-            student_names: students,
-            slack_ids: slacks,
+            course: record.get("Course Title"),
+            student_names: record.get("Enrolled Students"),
+            slack_ids: record.get("Slack ID"),
             time: message_time
           };
           courses.push(entry);
@@ -80,6 +55,43 @@ async function getCourses(base) {
       }
     );
 }
+
+formatDate = (weekday, hour) => {
+  switch (weekday) {
+    case 0:
+      // day = "Sunday";
+      day = "2019-10-06T";
+      break;
+    case 1:
+      // day = "Monday";
+      day = "2019-10-07T";
+      break;
+    case 2:
+      // day = "Tuesday";
+      day = "2019-10-08T";
+      break;
+    case 3:
+      // day = "Wednesday";
+      day = "2019-10-09T";
+      break;
+    case 4:
+      // day = "Thursday";
+      day = "2019-10-10T";
+      break;
+    case 5:
+      // day = "Friday";
+      day = "2019-10-11T";
+      break;
+    case 6:
+      // day = "Saturday";
+      day = "2019-10-12T";
+  }
+  hourEdit = hour.split(":");
+  if (hourEdit[0] != "12") {
+    hourEdit[0] = Number(hourEdit[0]) + 12;
+  }
+  return day + hourEdit[0] + ":" + hourEdit[1].substring(0, 2) + ":00Z";
+};
 
 // async function getStudents(base) {
 //   var students = {};
