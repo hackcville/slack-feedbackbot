@@ -9,7 +9,7 @@
 require("dotenv").config();
 
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_FALL_INVOLVEMENT_ID;
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_LIVE;
 
 var Airtable = require("airtable");
 var base = new Airtable({ apipKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
