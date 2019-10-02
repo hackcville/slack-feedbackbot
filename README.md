@@ -18,6 +18,9 @@ Start the verification server and then set the route in Slack API console, i.e. 
 #### Schedule messages
 `node message_scheduler.js $FILENAME`
 
+#### Get list of courses and students
+`node get_rosters.js`
+
 #### TODO
 * better error messages
 * process data from dialog (store in database)  

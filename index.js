@@ -11,10 +11,10 @@ require('dotenv').config();
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+const AIRTABLE_BASE_ID_DEV = process.env.AIRTABLE_BASE_ID_DEV;
 
 var Airtable = require('airtable');
-var base = new Airtable({apiKey: AIRTABLE_API_KEY}).base(AIRTABLE_BASE_ID);
+var base = new Airtable({apiKey: AIRTABLE_API_KEY}).base(AIRTABLE_BASE_ID_DEV);
 
 const table_name = 'Table 1';
 
@@ -122,7 +122,7 @@ slackInteractions.action({type: 'button'}, (payload) => {
 
   });
 
-slackInteractions.action({type: 'dialog_submission'}, (payload, respond) => {
+slackInteractions.action({type: 'dialog_submission'}, (payload) => {
 
     base(table_name).create([ // process the dialog response into Airtable
       {
