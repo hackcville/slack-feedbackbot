@@ -8,36 +8,45 @@
  * 10/2/2019
  */
 
+//import necessary modules
 require("dotenv").config();
+var Airtable = require("airtable");
+const express = require("express");
+const request = require("request");
+const { WebClient } = require("@slack/web-api");
+const { createEventAdapter } = require("@slack/events-api");
+const { createMessageAdapter } = require("@slack/interactive-messages");
 
+//assign and import environmental variables
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_LIVE;
 
-var Airtable = require("airtable");
-var base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
-
-const table_name = "Fall 2019 Slackbot Feedback";
-
-const express = require("express");
-const { WebClient } = require("@slack/web-api");
-const { createEventAdapter } = require("@slack/events-api");
-const { createMessageAdapter } = require("@slack/interactive-messages");
-
-const slackEvents = createEventAdapter(SLACK_SIGNING_SECRET);
-const slackInteractions = createMessageAdapter(SLACK_SIGNING_SECRET);
-const web = new WebClient(SLACK_BOT_TOKEN);
-
-const port = process.env.PORT || 3000;
+//instantiate express and define the port we want
 const app = express();
+const port = process.env.PORT || 3000;
 
-app.use("/slack/events", slackEvents.requestListener());
-app.use("/slack/actions", slackInteractions.requestListener());
-
+//start the server
 app.listen(port, () => {
   console.log(`Listening for actions/events on port ${port}...`);
 });
+
+// // This route handles GET requests to our root ngrok address and responds with the same "Ngrok is working message" we used before
+// app.get("/", function(req, res) {
+//   res.send("Ngrok is working! Path Hit: " + req.url);
+// });
+
+//set up Slack stuff
+const slackEvents = createEventAdapter(SLACK_SIGNING_SECRET);
+const slackInteractions = createMessageAdapter(SLACK_SIGNING_SECRET);
+const web = new WebClient(SLACK_BOT_TOKEN);
+app.use("/slack/events", slackEvents.requestListener());
+app.use("/slack/actions", slackInteractions.requestListener());
+
+//set up Airtable stuff
+var base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
+const table_name = "Fall 2019 Slackbot Feedback";
 
 // https://api.slack.com/events/app_mention
 slackEvents.on("app_mention", event => {
