@@ -6,59 +6,58 @@
  * 9/23/2019
  */
 
-require('dotenv').config();
+exports.schedule_messsages = (courses) => {
 
-const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
-const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
+  const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
+  const { WebClient } = require('@slack/web-api');
+  const web = new WebClient(SLACK_BOT_TOKEN);
 
-const fs = require('fs');
+  courses.forEach(course => { // schedule message to each user in list
 
-const { WebClient } = require('@slack/web-api');
-const web = new WebClient(SLACK_BOT_TOKEN);
+    const course_title = course.course_name;
+    const course_message_date_str = course.start_date; // date string in ISO format
+    const course_message_date = new Date(course_message_date_str);
+    const course_message_date_epoch_secs = course_message_date.getTime() / 1000;
+    const slack_user_ids = course.student_slack_ids;
 
-const filename = process.argv[2] // command line arg with message data file
-const data = JSON.parse(fs.readFileSync(filename));
+    slack_user_ids.forEach(user_id => {
 
-const message_date_str = data.message_date_str; // date string in ISO format
-const message_date = new Date(message_date_str);
-const message_date_epoch_secs = message_date.getTime() / 1000;
+      const scheduled_bot_message = { // template for scheduled message
+        token: SLACK_BOT_TOKEN,
+        channel: user_id,
+        post_at: course_message_date_epoch_secs,
+        link_names: true,
+        as_user: true, 
+        attachments: [
+          {
+            text: `Hey <@${user_id}>, Would you mind giving us some feedback on ${course_title}?`,
+            callback_id: 'feedback_form_open',
+            attachment_type: 'default',
+            actions: [
+              {
+                name: 'feedback_button',
+                text: 'Begin Survey!',
+                type: 'button',
+                value: 'feedback'
+              }
+            ]
+          }
+        ]
+      };
 
-const slack_user_ids = data.slack_user_ids;
+      (async () => {
+        // https://api.slack.com/methods/chat.scheduleMessage
+        const res = await web.chat.scheduleMessage(scheduled_bot_message)
+          .then(() => {
+            console.log(`Message scheduled for ${user_id} at ${course_message_date.toUTCString()}`);
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      })();
 
-slack_user_ids.forEach(user_id => { // schedule message to each user in list
-
-    const scheduled_bot_message = { // template for scheduled message
-      token: SLACK_BOT_TOKEN,
-      channel: user_id,
-      post_at: message_date_epoch_secs,
-      link_names: true,
-      as_user: true, 
-      attachments: [
-        {
-          text: `Hey <@${user_id}>, Would you mind giving us some feedback?`,
-          callback_id: 'feedback_form_open',
-          attachment_type: 'default',
-          actions: [
-            {
-              name: 'feedback_button',
-              text: 'Begin Survey!',
-              type: 'button',
-              value: 'feedback'
-            }
-          ]
-        }
-      ]
-    };
-
-    (async () => {
-      // https://api.slack.com/methods/chat.scheduleMessage
-      const res = await web.chat.scheduleMessage(scheduled_bot_message)
-        .then(() => {
-          console.log(`Message scheduled for ${user_id} at ${message_date.toUTCString()}`);
-        })
-        .catch(err => {
-          console.log(err);
-        });
-    })();
+    })
 
   });
+
+}
