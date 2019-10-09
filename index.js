@@ -16,7 +16,7 @@ const AIRTABLE_BASE_ID_DEV = process.env.AIRTABLE_BASE_ID_DEV;
 var Airtable = require('airtable');
 var base = new Airtable({apiKey: AIRTABLE_API_KEY}).base(AIRTABLE_BASE_ID_DEV);
 
-const table_name = 'Table 1';
+const table_name = 'Submissions';
 
 const express = require('express');
 const { WebClient } = require('@slack/web-api');

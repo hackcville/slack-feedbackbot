@@ -21,12 +21,6 @@ Start the verification server and then set the route in Slack API console, i.e. 
 #### Get list of courses and students
 `node get_rosters.js`
 
-#### TODO
-* better error messages
-* process data from dialog (store in database)  
-* automate the configuration of scheduling and recipients of messages  
-* integrate with HackCville servers/website/Slack  
-
 #### References
 * https://github.com/slackapi/node-slack-sdk  
 * https://api.slack.com/methods   
