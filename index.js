@@ -27,22 +27,17 @@ const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_LIVE;
 const app = express();
 const port = process.env.PORT || 3000;
 
-//start the server
-app.listen(port, () => {
-  console.log(`Listening for actions/events on port ${port}...`);
-});
-
-// // This route handles GET requests to our root ngrok address and responds with the same "Ngrok is working message" we used before
-// app.get("/", function(req, res) {
-//   res.send("Ngrok is working! Path Hit: " + req.url);
-// });
-
 //set up Slack stuff
 const slackEvents = createEventAdapter(SLACK_SIGNING_SECRET);
 const slackInteractions = createMessageAdapter(SLACK_SIGNING_SECRET);
 const web = new WebClient(SLACK_BOT_TOKEN);
 app.use("/slack/events", slackEvents.requestListener());
 app.use("/slack/actions", slackInteractions.requestListener());
+
+//start the server
+app.listen(port, () => {
+  console.log(`Listening for actions/events on port ${port}...`);
+});
 
 //set up Airtable stuff
 var base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
