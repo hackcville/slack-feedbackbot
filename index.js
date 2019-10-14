@@ -84,6 +84,11 @@ slackInteractions.action({ type: "button" }, payload => {
       submit_label: "Submit",
       elements: [
         {
+          label: "What course are you in?",
+          type: "text",
+          name: "course"
+        },
+        {
           label: "The pace of the material so far has been...",
           type: "select",
           name: "pace",
@@ -150,7 +155,8 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
           "Pace Rating": Number(payload.submission.pace),
           "Understanding Rating": Number(payload.submission.understanding),
           "Enjoyment Rating": Number(payload.submission.enjoyment),
-          Feedback: payload.submission.feedback
+          Feedback: payload.submission.feedback,
+          Course: payload.submission.course
         }
       }
     ],
