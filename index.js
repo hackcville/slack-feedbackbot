@@ -84,6 +84,11 @@ slackInteractions.action({ type: "button" }, payload => {
       submit_label: "Submit",
       elements: [
         {
+          label: "What is your name?",
+          type: "text",
+          name: "name"
+        },
+        {
           label: "What course are you in?",
           type: "text",
           name: "course"
@@ -151,7 +156,8 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
       // process the dialog response into Airtable
       {
         fields: {
-          Name: payload.user.id,
+          Name: payload.submission.name,
+          slackID: payload.user.id,
           "Pace Rating": Number(payload.submission.pace),
           "Understanding Rating": Number(payload.submission.understanding),
           "Enjoyment Rating": Number(payload.submission.enjoyment),
