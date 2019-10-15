@@ -32,6 +32,9 @@ const app = express();
 
 app.use("/slack/events", slackEvents.requestListener());
 app.use("/slack/actions", slackInteractions.requestListener());
+app.get("/", function(req, res) {
+  res.send("hello world");
+});
 
 app.listen(port, () => {
   console.log(`Listening for actions/events on port ${port}...`);
