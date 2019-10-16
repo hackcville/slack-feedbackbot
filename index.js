@@ -34,6 +34,9 @@ const app = express();
 
 app.use("/slack/events", slackEvents.requestListener());
 app.use("/slack/actions", slackInteractions.requestListener());
+app.get("/", (req, res) => {
+  res.sendFile("auth_page.html");
+});
 app.get("/slack/auth", function(req, res) {
   if (!req.query.code) {
     //access denied
