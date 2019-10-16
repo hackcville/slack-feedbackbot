@@ -24,6 +24,8 @@ const { createEventAdapter } = require("@slack/events-api");
 const { createMessageAdapter } = require("@slack/interactive-messages");
 const axios = require("axios");
 const qs = require("qs");
+const path = require("path");
+const router = express.Router();
 
 const slackEvents = createEventAdapter(SLACK_SIGNING_SECRET);
 const slackInteractions = createMessageAdapter(SLACK_SIGNING_SECRET);
@@ -34,9 +36,12 @@ const app = express();
 
 app.use("/slack/events", slackEvents.requestListener());
 app.use("/slack/actions", slackInteractions.requestListener());
-app.get("/", function(req, res) {
-  res.sendFile("auth_page.html");
+
+router.get("/", function(req, res) {
+  res.sendFile(path.join(_dirname + "/auth_page.html"));
 });
+app.use("/", router);
+
 app.get("/slack/auth", function(req, res) {
   if (!req.query.code) {
     //access denied
