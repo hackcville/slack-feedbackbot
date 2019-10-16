@@ -22,7 +22,8 @@ const express = require("express");
 const { WebClient } = require("@slack/web-api");
 const { createEventAdapter } = require("@slack/events-api");
 const { createMessageAdapter } = require("@slack/interactive-messages");
-const request = require("request");
+const axios = require("axios");
+const qs = require("qs");
 
 const slackEvents = createEventAdapter(SLACK_SIGNING_SECRET);
 const slackInteractions = createMessageAdapter(SLACK_SIGNING_SECRET);
@@ -34,22 +35,43 @@ const app = express();
 app.use("/slack/events", slackEvents.requestListener());
 app.use("/slack/actions", slackInteractions.requestListener());
 app.get("/slack/auth", function(req, res) {
-  var data = {
-    form: {
-      client_id: process.env.SLACK_CLIENT_ID,
-      client_secret: process.env.SLACK_CLIENT_SECRET,
-      code: req.query.code
-    }
+  if (!req.query.code) {
+    //access denied
+    res.redirect("/?error=access_denied");
+    return;
+  }
+  const authinfo = {
+    client_id: process.env.SLACK_CLIENT_ID,
+    client_secret: process.env.SLACK_CLIENT_SECRET,
+    code: req.query.code
   };
-  request.post("https://slack.com/api/oauth.access", data, function(
-    error,
-    response,
-    body
-  ) {
-    if (!error && response.statusCode == 200) {
-      let token = JSON.parse(body).access_token;
-    }
-  });
+  axios
+    .post("https://slack.com/api/oauth.access", qs.stringify(authInfo))
+    .then(result => {
+      console.log(result.data);
+      const { access_token, refresh_token, expires_in, error } = result.data;
+      if (error) {
+        res.sendStatus(401);
+        console.log(error);
+        return;
+      }
+      axios
+        .post(
+          `https://slack.com/api/team.info`,
+          qs.stringify({ token: access_token })
+        )
+        .then(result => {
+          if (!result.data.error) {
+            res.redirect(`http://${result.data.team.domain}.slack.com`);
+          }
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    })
+    .catch(err => {
+      console.error(err);
+    });
 });
 
 app.listen(port, () => {
