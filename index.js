@@ -22,6 +22,7 @@ const express = require("express");
 const { WebClient } = require("@slack/web-api");
 const { createEventAdapter } = require("@slack/events-api");
 const { createMessageAdapter } = require("@slack/interactive-messages");
+const request = require("request");
 
 const slackEvents = createEventAdapter(SLACK_SIGNING_SECRET);
 const slackInteractions = createMessageAdapter(SLACK_SIGNING_SECRET);
@@ -40,15 +41,15 @@ app.get("/slack/auth", function(req, res) {
       code: req.query.code
     }
   };
-  requestAnimationFrame.post(
-    "https://slack.com/api/oauth.access",
-    data,
-    function(error, response, body) {
-      if (!error && response.statusCode == 200) {
-        let token = JSON.parse(body).access_token;
-      }
+  request.post("https://slack.com/api/oauth.access", data, function(
+    error,
+    response,
+    body
+  ) {
+    if (!error && response.statusCode == 200) {
+      let token = JSON.parse(body).access_token;
     }
-  );
+  });
 });
 
 app.listen(port, () => {
