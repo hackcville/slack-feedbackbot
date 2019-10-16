@@ -38,7 +38,7 @@ app.use("/slack/events", slackEvents.requestListener());
 app.use("/slack/actions", slackInteractions.requestListener());
 
 router.get("/", function(req, res) {
-  res.sendFile(path.join(_dirname + "/auth_page.html"));
+  res.send("hello world");
 });
 app.use("/", router);
 
