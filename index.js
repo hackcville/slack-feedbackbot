@@ -38,7 +38,9 @@ app.use("/slack/events", slackEvents.requestListener());
 app.use("/slack/actions", slackInteractions.requestListener());
 
 app.get("/", function(req, res) {
-  res.send("<a>hello</a>");
+  res.send(
+    "<a href='https://slack.com/oauth/authorize?client_id=740362425955.749609775569&scope=bot,commands,chat:write:bot,chat:write:user,im:read,groups:read,channels:read,channels:write,im:write,groups:write'><img alt='Add to Slack' height='40' width='139' src='https://platform.slack-edge.com/img/add_to_slack.png' srcset='https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x'></a>"
+  );
 });
 app.get("/slack/auth", function(req, res) {
   if (!req.query.code) {
