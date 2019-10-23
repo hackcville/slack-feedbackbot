@@ -1,9 +1,13 @@
 /*
  * index.js
- * Server to recieve events/actions from Slack and send surveys and record responses
+ * 
+ * Express server on Heroku to recieve events/actions from Slack and respond
+ * to feed back surveys and record responses in Airtable
+ * 
  * by Forrest Feaser and Camille Cooper
  * for HackCville, Inc.
- * 9/12/2019
+ * 
+ * 10/23/2019
  */
 
 require("dotenv").config();
@@ -12,11 +16,10 @@ const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_LIVE;
+const TABLE_NAME = "Fall 2019 Slackbot Feedback";
 
-var Airtable = require("airtable");
-var base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
-
-const table_name = "Fall 2019 Slackbot Feedback";
+const Airtable = require("airtable");
+const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
 
 const express = require("express");
 const { WebClient } = require("@slack/web-api");
@@ -42,9 +45,9 @@ app.get("/", function(req, res) {
     "<a href='https://slack.com/oauth/authorize?client_id=740362425955.749609775569&scope=bot,commands,chat:write:bot,chat:write:user,im:read,groups:read,channels:read,channels:write,im:write,groups:write'><img alt='Add to Slack' height='40' width='139' src='https://platform.slack-edge.com/img/add_to_slack.png' srcset='https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x'></a>"
   );
 });
+
 app.get("/slack/auth", function(req, res) {
   if (!req.query.code) {
-    //access denied
     res.redirect("/?error=access_denied");
     return;
   }
@@ -86,45 +89,10 @@ app.listen(port, () => {
   console.log(`Listening for actions/events on port ${port}...`);
 });
 
-// https://api.slack.com/events/app_mention
-slackEvents.on("app_mention", event => {
-  // bot responds to Slack mentions with survey
-
-  const bot_feedback_message = {
-    // template for message with button to survey
-    token: SLACK_BOT_TOKEN,
-    channel: event.channel,
-    text: `Hey <@${event.user}>`,
-    link_names: true,
-    attachments: [
-      {
-        text: "Would you mind giving us some feedback?",
-        callback_id: "feedback_form_open",
-        color: "#3149EC",
-        attachment_type: "default",
-        actions: [
-          {
-            name: "feedback_button",
-            text: "Begin Survey!",
-            type: "button",
-            value: "feedback"
-          }
-        ]
-      }
-    ]
-  };
-
-  (async () => {
-    // https://api.slack.com/methods/chat.postMessage
-    const res = await web.chat.postMessage(bot_feedback_message).catch(err => {
-      console.log(err);
-    });
-  })();
-});
-
 slackInteractions.action({ type: "button" }, payload => {
+
+  //template for feedback survey
   const feedback_dialog = {
-    // template for dialog with feedback form
     token: SLACK_BOT_TOKEN,
     trigger_id: payload.trigger_id,
     dialog: JSON.stringify({
@@ -146,7 +114,7 @@ slackInteractions.action({ type: "button" }, payload => {
           label: "The pace of the material so far has been...",
           type: "select",
           name: "pace",
-          placeholder: "1-5, 5=too fast, 1=too slow",
+          placeholder: "1-5, 5 = Too fast, 1 = Too slow",
           options: [
             { label: "1", value: 1 },
             { label: "2", value: 2 },
@@ -159,7 +127,7 @@ slackInteractions.action({ type: "button" }, payload => {
           label: "My own understanding of the material is...",
           type: "select",
           name: "understanding",
-          placeholder: "1-5, 5=I could teach this, 1=I'm totally lost",
+          placeholder: "1-5, 5 = I could teach this, 1 = I'm totally lost",
           options: [
             { label: "1", value: 1 },
             { label: "2", value: 2 },
@@ -172,7 +140,7 @@ slackInteractions.action({ type: "button" }, payload => {
           label: "How are you enjoying the course?",
           type: "select",
           name: "enjoyment",
-          placeholder: "1-5, 5=I’m loving it, 1=I’m hating it",
+          placeholder: "1-5, 5 = I’m loving it, 1 = I’m hating it",
           options: [
             { label: "1", value: 1 },
             { label: "2", value: 2 },
@@ -192,21 +160,24 @@ slackInteractions.action({ type: "button" }, payload => {
   };
 
   (async () => {
-    // https://api.slack.com/methods/dialog.open
-    const res = await web.dialog.open(feedback_dialog).catch(err => {
-      console.log(err);
-    });
+    //https://api.slack.com/methods/dialog.open
+    const res = await web.dialog.open(feedback_dialog)
+      .catch(err => {
+        console.log(err);
+      });
   })();
+
 });
 
 slackInteractions.action({ type: "dialog_submission" }, payload => {
-  base(table_name).create(
+
+  //record the dialog response in Airtable
+  base(TABLE_NAME).create(
     [
-      // process the dialog response into Airtable
       {
         fields: {
           Name: payload.submission.name,
-          slackID: payload.user.id,
+          SlackID: payload.user.id,
           "Pace Rating": Number(payload.submission.pace),
           "Understanding Rating": Number(payload.submission.understanding),
           "Enjoyment Rating": Number(payload.submission.enjoyment),
@@ -222,8 +193,8 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
     }
   );
 
-  bot_response_message = {
-    // template for bot response to completed form
+  //template for bot response to completed form
+  const bot_response_message = {
     token: SLACK_BOT_TOKEN,
     channel: payload.channel.id,
     text: `Thanks! <@${payload.user.id}>`,
@@ -231,9 +202,10 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
   };
 
   (async () => {
-    // https://api.slack.com/methods/chat.postMessage
+    //https://api.slack.com/methods/chat.postMessage
     const res = await web.chat.postMessage(bot_response_message).catch(err => {
       console.log(err);
     });
   })();
+
 });
