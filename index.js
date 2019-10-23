@@ -89,6 +89,41 @@ app.listen(port, () => {
   console.log(`Listening for actions/events on port ${port}...`);
 });
 
+//https://api.slack.com/events/app_mention
+slackEvents.on("app_mention", event => {
+
+  //template for message with button to survey
+ const bot_feedback_message = {
+   token: SLACK_BOT_TOKEN,
+   channel: event.channel,
+   text: `Hey <@${event.user}>`,
+   link_names: true,
+   attachments: [
+     {
+       text: "Would you mind giving us some feedback?",
+       callback_id: "feedback_form_open",
+       color: "#3149EC",
+       attachment_type: "default",
+       actions: [
+         {
+           name: "feedback_button",
+           text: "Begin Survey!",
+           type: "button",
+           value: "feedback"
+         }
+       ]
+     }
+   ]
+ };
+
+ (async () => {
+   // https://api.slack.com/methods/chat.postMessage
+   const res = await web.chat.postMessage(bot_feedback_message).catch(err => {
+     console.log(err);
+   });
+ })();
+});
+
 slackInteractions.action({ type: "button" }, payload => {
 
   //template for feedback survey
