@@ -152,27 +152,45 @@ slackInteractions.action({ type: "button" }, payload => {
 });
 
 slackInteractions.action({ type: "dialog_submission" }, payload => {
-  //record the dialog response in Airtable
-  base(TABLE_NAME).create(
-    [
-      {
-        fields: {
-          Name: payload.submission.name,
-          SlackID: payload.user.id,
-          "Pace Rating": Number(payload.submission.pace),
-          "Understanding Rating": Number(payload.submission.understanding),
-          "Enjoyment Rating": Number(payload.submission.enjoyment),
-          Feedback: payload.submission.feedback,
-          Course: payload.submission.course
+  //retrieve student records from Airtable
+  var student_name = "";
+  var student_course = "";
+  base("Students")
+    .select({
+      maxRecords: 1,
+      view: "Master Data",
+      filterByFormula: "{Slack ID}= '" + payload.user.id + "'"
+    })
+    .eachPage((records, fetchNextPage) => {
+      records.forEach(record => {
+        student_name = record.get("Name");
+        student_course = record.get("F19 Course Involvement (Section)");
+      });
+      fetchNextPage();
+    })
+    .then(() => {
+      //record the dialog response in Airtable
+      base(TABLE_NAME).create(
+        [
+          {
+            fields: {
+              Name: student_name,
+              SlackID: payload.user.id,
+              "Pace Rating": Number(payload.submission.pace),
+              "Understanding Rating": Number(payload.submission.understanding),
+              "Enjoyment Rating": Number(payload.submission.enjoyment),
+              Feedback: payload.submission.feedback,
+              Course: student_course
+            }
+          }
+        ],
+        function(err) {
+          if (err) {
+            console.error(err);
+          }
         }
-      }
-    ],
-    function(err) {
-      if (err) {
-        console.error(err);
-      }
-    }
-  );
+      );
+    });
 
   //template for bot response to completed form
   const bot_response_message = {
