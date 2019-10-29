@@ -1,12 +1,12 @@
 /*
  * index.js
- * 
+ *
  * Express server on Heroku to recieve events/actions from Slack and respond
  * to feed back surveys and record responses in Airtable
- * 
+ *
  * by Forrest Feaser and Camille Cooper
  * for HackCville, Inc.
- * 
+ *
  * 10/23/2019
  */
 
@@ -25,10 +25,6 @@ const express = require("express");
 const { WebClient } = require("@slack/web-api");
 const { createEventAdapter } = require("@slack/events-api");
 const { createMessageAdapter } = require("@slack/interactive-messages");
-const axios = require("axios");
-const qs = require("qs");
-const path = require("path");
-const router = express.Router();
 
 const slackEvents = createEventAdapter(SLACK_SIGNING_SECRET);
 const slackInteractions = createMessageAdapter(SLACK_SIGNING_SECRET);
@@ -40,92 +36,45 @@ const app = express();
 app.use("/slack/events", slackEvents.requestListener());
 app.use("/slack/actions", slackInteractions.requestListener());
 
-app.get("/", function(req, res) {
-  res.send(
-    "<a href='https://slack.com/oauth/authorize?client_id=740362425955.749609775569&scope=bot,commands,chat:write:bot,chat:write:user,im:read,groups:read,channels:read,channels:write,im:write,groups:write'><img alt='Add to Slack' height='40' width='139' src='https://platform.slack-edge.com/img/add_to_slack.png' srcset='https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x'></a>"
-  );
-});
-
-app.get("/slack/auth", function(req, res) {
-  if (!req.query.code) {
-    res.redirect("/?error=access_denied");
-    return;
-  }
-  const authinfo = {
-    client_id: process.env.SLACK_CLIENT_ID,
-    client_secret: process.env.SLACK_CLIENT_SECRET,
-    code: req.query.code
-  };
-  axios
-    .post("https://slack.com/api/oauth.access", qs.stringify(authInfo))
-    .then(result => {
-      console.log(result.data);
-      const { access_token, refresh_token, expires_in, error } = result.data;
-      if (error) {
-        res.sendStatus(401);
-        console.log(error);
-        return;
-      }
-      axios
-        .post(
-          `https://slack.com/api/team.info`,
-          qs.stringify({ token: access_token })
-        )
-        .then(result => {
-          if (!result.data.error) {
-            res.redirect(`http://${result.data.team.domain}.slack.com`);
-          }
-        })
-        .catch(err => {
-          console.error(err);
-        });
-    })
-    .catch(err => {
-      console.error(err);
-    });
-});
-
 app.listen(port, () => {
   console.log(`Listening for actions/events on port ${port}...`);
 });
 
 //https://api.slack.com/events/app_mention
 slackEvents.on("app_mention", event => {
-
   //template for message with button to survey
- const bot_feedback_message = {
-   token: SLACK_BOT_TOKEN,
-   channel: event.channel,
-   text: `Hey <@${event.user}>`,
-   link_names: true,
-   attachments: [
-     {
-       text: "Would you mind giving us some feedback?",
-       callback_id: "feedback_form_open",
-       color: "#3149EC",
-       attachment_type: "default",
-       actions: [
-         {
-           name: "feedback_button",
-           text: "Begin Survey!",
-           type: "button",
-           value: "feedback"
-         }
-       ]
-     }
-   ]
- };
+  const bot_feedback_message = {
+    token: SLACK_BOT_TOKEN,
+    channel: event.channel,
+    text: `Hey <@${event.user}>`,
+    link_names: true,
+    attachments: [
+      {
+        text: "Would you mind giving us some feedback?",
+        callback_id: "feedback_form_open",
+        color: "#3149EC",
+        attachment_type: "default",
+        actions: [
+          {
+            name: "feedback_button",
+            text: "Begin Survey!",
+            type: "button",
+            value: "feedback"
+          }
+        ]
+      }
+    ]
+  };
 
- (async () => {
-   // https://api.slack.com/methods/chat.postMessage
-   const res = await web.chat.postMessage(bot_feedback_message).catch(err => {
-     console.log(err);
-   });
- })();
+  (async () => {
+    // https://api.slack.com/methods/chat.postMessage
+    const res = await web.chat.postMessage(bot_feedback_message).catch(err => {
+      console.log(err);
+    });
+  })();
 });
 
 slackInteractions.action({ type: "button" }, payload => {
-
   //template for feedback survey
   const feedback_dialog = {
     token: SLACK_BOT_TOKEN,
@@ -196,16 +145,13 @@ slackInteractions.action({ type: "button" }, payload => {
 
   (async () => {
     //https://api.slack.com/methods/dialog.open
-    const res = await web.dialog.open(feedback_dialog)
-      .catch(err => {
-        console.log(err);
-      });
+    const res = await web.dialog.open(feedback_dialog).catch(err => {
+      console.log(err);
+    });
   })();
-
 });
 
 slackInteractions.action({ type: "dialog_submission" }, payload => {
-
   //record the dialog response in Airtable
   base(TABLE_NAME).create(
     [
@@ -242,5 +188,4 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
       console.log(err);
     });
   })();
-
 });
