@@ -85,16 +85,6 @@ slackInteractions.action({ type: "button" }, payload => {
       submit_label: "Submit",
       elements: [
         {
-          label: "What is your name?",
-          type: "text",
-          name: "name"
-        },
-        {
-          label: "What course are you in?",
-          type: "text",
-          name: "course"
-        },
-        {
           label: "The pace of the material so far has been...",
           type: "select",
           name: "pace",
