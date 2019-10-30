@@ -1,7 +1,8 @@
+const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_LIVE;
+
 var Airtable = require("airtable");
-var base = new Airtable({ apiKey: "key9KgrwX5Z5FsP26" }).base(
-  "appMfcy98yxGtYwDO"
-);
+var base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
 var apple = "UCQC2QMQX";
 var id = "{Slack ID} = '" + apple + "'";
 var student_info = "";
