@@ -1,43 +1,44 @@
-const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_LIVE;
+var payload = {
+  user: { id: "UETEHA6NN" },
+  submission: { pace: 3, understanding: 3, enjoyment: 3, feedback: "hello" }
+};
 
-var Airtable = require("airtable");
-var base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
-var apple = "UCQC2QMQX";
-var id = "{Slack ID} = '" + apple + "'";
-var student_info = "";
+var student_name = "";
+var student_course = "";
 base("Students")
   .select({
     maxRecords: 1,
     view: "Master Data",
-    filterByFormula: id
+    filterByFormula: "{Slack ID}= '" + payload.user.id + "'"
   })
   .eachPage((records, fetchNextPage) => {
     records.forEach(record => {
-      const name = record.get("Name");
-      student_info = name;
+      student_name = record.get("Name");
+      student_course = record.get("F19 Course Involvement (Section)");
     });
     fetchNextPage();
   })
   .then(() => {
-    base("Students")
-      .select({
-        maxRecords: 1,
-        view: "Master Data",
-        filterByFormula: "{Name} = '" + student_info + "'"
-      })
-      .eachPage(
-        function page(records, fetchNextPage) {
-          records.forEach(function(record) {
-            console.log("Retrieved", record.get("Name"));
-          });
-          fetchNextPage();
-        },
-        function done(err) {
-          if (err) {
-            console.error(err);
-            return;
+    //record the dialog response in Airtable
+    console.log(student_course[0]);
+    base(TABLE_NAME).create(
+      [
+        {
+          fields: {
+            Name: student_name,
+            SlackID: payload.user.id,
+            "Pace Rating": Number(payload.submission.pace),
+            "Understanding Rating": Number(payload.submission.understanding),
+            "Enjoyment Rating": Number(payload.submission.enjoyment),
+            Feedback: payload.submission.feedback,
+            Course: student_course[0]
           }
         }
-      );
+      ],
+      function(err) {
+        if (err) {
+          console.error(err);
+        }
+      }
+    );
   });
