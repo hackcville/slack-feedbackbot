@@ -6,7 +6,7 @@
  * by Forrest Feaser and Camille Cooper
  * for HackCville, Inc.
  * 
- * 11/02/2019
+ * September-November 2019
  */
 
 require("dotenv").config();
@@ -23,8 +23,14 @@ const Airtable = require("airtable");
 const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID_PROD);
 
 //for staggering messages, but doesn't work with async
-const sleep = (milliseconds) => {
+const sleep = milliseconds => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
+//not the best way to do this in practice but it's the only thing that works with async
+const wait = milliseconds => {
+  const now = new Date().getTime();
+  while(new Date().getTime() < now + milliseconds){};
 }
 
 const scheduleMessages = async () => {
@@ -33,7 +39,7 @@ const scheduleMessages = async () => {
 
   await base(COURSES_TABLE_NAME)
     .select({
-      fields: ["Course Title", "Slack ID", "Survey Datetime", "Meeting Day"], 
+      fields: ["Course Title", "Slack ID", "Survey Datetime"], 
       filterByFormula: "AND(NOT({Course Title} = ''), NOT({Slack ID} = ''), NOT({Survey Datetime} = ''))"
     })
 
@@ -55,11 +61,13 @@ const scheduleMessages = async () => {
 
         const course_title = course.course_title;
         const slack_ids = course.student_slack_ids;
-        //watch out for DST
-        const message_date = new Date(course.survey_date);
-        const message_date_epoch_secs = message_date.getTime() / 1000;
+        const message_date = new Date(course.survey_date); //watch out for DST
 
         slack_ids.forEach(user_id => {
+
+          const message_date_epoch_secs = message_date.getTime() / 1000;
+          const datestring = message_date.toLocaleString(); //schedule date of current message so it doesn't get lost in async
+          message_date.setSeconds(message_date.getSeconds() + 2); //increment the time when the next message is schedule for
 
           //scheduled message containing link to feedback form
           const scheduled_bot_message = {
@@ -70,7 +78,7 @@ const scheduleMessages = async () => {
             as_user: false, //make this true for message to appear in feedbackbot DM
             attachments: [
               {
-                text: `Hey <@${user_id}>, would you mind giving us some feedback on ${course_title}?`,
+                text: `Hi <@${user_id}>, I'm Andrew. I collect feedback from HC students so we can learn how to continue improving your course. Can you take 20 secs to let me know how ${course_title} went today?`,
                 callback_id: "feedback_form_open",
                 color: "#3149EC",
                 attachment_type: "default",
@@ -91,8 +99,9 @@ const scheduleMessages = async () => {
             await web.chat.scheduleMessage(scheduled_bot_message)
             .then(() => {
               console.log(
-                `Message scheduled for ${user_id} at ${message_date.toLocaleString()}`
+                `Message scheduled for ${user_id} in ${course_title} at ${datestring}`
               );
+              wait(1000); //wait 1 second between each message schedule to avoid rate limiting
             })
             .catch(err => {
               console.log(err);
