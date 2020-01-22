@@ -16,7 +16,7 @@ const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_LIVE;
-const TABLE_NAME = "Fall 2019 Slackbot Feedback";
+const TABLE_NAME = "Spring 2020 Slackbot Feedback";
 
 const Airtable = require("airtable");
 const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
@@ -145,16 +145,16 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
   //retrieve student records from Airtable
   var student_name = "";
   var student_course = "";
-  base("Students")
+  base("Spring 2020Students")
     .select({
       maxRecords: 1,
-      view: "Master Data",
+      view: "Grid view - don't touch",
       filterByFormula: "{Slack ID}= '" + payload.user.id + "'"
     })
     .eachPage((records, fetchNextPage) => {
       records.forEach(record => {
-        student_name = record.get("Name");
-        student_course = record.get("F19 Course Involvement (Section)");
+        student_name = record.get("Full Name");
+        student_course = record.get("Course");
       });
       fetchNextPage();
     })
@@ -171,7 +171,8 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
               "Understanding Rating": Number(payload.submission.understanding),
               "Enjoyment Rating": Number(payload.submission.enjoyment),
               Feedback: payload.submission.feedback,
-              Course: student_course[0]
+              Course: student_course[0],
+              "Student Link": student_name
             }
           }
         ],
