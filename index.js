@@ -153,7 +153,8 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
     })
     .eachPage((records, fetchNextPage) => {
       records.forEach(record => {
-        student_name = record.get("Full Name");
+        student_name = "Camille Cooper";
+        // student_name = record.get("Full Name");
         student_course = record.get("Course");
       });
       fetchNextPage();
