@@ -166,7 +166,7 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
         [
           {
             fields: {
-              Name: student_name,
+              Name: "Camille Cooper",
               SlackID: payload.user.id,
               "Pace Rating": Number(payload.submission.pace),
               "Understanding Rating": Number(payload.submission.understanding),
