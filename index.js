@@ -145,7 +145,7 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
   //retrieve student records from Airtable
   var student_name = "";
   var student_course = "";
-  base("Spring 2020Students")
+  base("Spring 2020 Students")
     .select({
       maxRecords: 1,
       view: "Grid view - don't touch",
