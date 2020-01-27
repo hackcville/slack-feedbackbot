@@ -160,7 +160,7 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
     })
     .then(() => {
       //record the dialog response in Airtable
-      console.log(student_course);
+      console.log("student course is ", student_course);
       base(TABLE_NAME).create(
         [
           {
