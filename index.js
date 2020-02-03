@@ -145,6 +145,7 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
   //retrieve student records from Airtable
   var student_name = "";
   var student_course = "";
+  var student_link = [];
   base("Spring 2020 Students")
     .select({
       maxRecords: 1,
@@ -155,7 +156,7 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
       records.forEach(record => {
         student_name = record.get("Full Name");
         student_course = record.get("Course + Section");
-        student_link = record.id;
+        student_link.push(record.id);
       });
       fetchNextPage();
     })
