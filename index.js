@@ -171,7 +171,7 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
               "Understanding Rating": Number(payload.submission.understanding),
               "Enjoyment Rating": Number(payload.submission.enjoyment),
               Feedback: payload.submission.feedback,
-              Course: student_course[0]
+              "Course Link": student_course
             }
           }
         ],
