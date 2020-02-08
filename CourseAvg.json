@@ -1,0 +1,98 @@
+[
+  {
+    "Course Title": "Convert A S2020",
+    "Course ID": "recFg1uN0SCnCofFZ",
+    "Instructor": "Emily",
+    "Instructor Email": "emily.vaughan@hackcville.com",
+    "paceAvg": 3,
+    "understandAvg": 4.333333333333333
+  },
+  {
+    "Course Title": "Convert B S2020",
+    "Course ID": "recGIjE5fu5iFXcDH",
+    "Instructor": "Mallory",
+    "Instructor Email": "mallory@hackcville.com",
+    "paceAvg": 3,
+    "understandAvg": 4.5
+  },
+  {
+    "Course Title": "Deploy A S2020",
+    "Course ID": "rec9vImIqlWO6ufne",
+    "Instructor": "Chris",
+    "Instructor Email": "chris.santamaria@hackcville.com",
+    "paceAvg": 4,
+    "understandAvg": 3.3333333333333335
+  },
+  {
+    "Course Title": "Hustle A S2020",
+    "Course ID": "rec8HcWYLyEFKWlwH",
+    "Instructor": "John",
+    "Instructor Email": "john@hackcville.com",
+    "paceAvg": 4,
+    "understandAvg": 2
+  },
+  {
+    "Course Title": "Node A S2020",
+    "Course ID": "recKQtIH74927kYdy",
+    "Instructor": "Christian",
+    "Instructor Email": "christian@hackcville.com",
+    "paceAvg": 3.142857142857143,
+    "understandAvg": 3
+  },
+  {
+    "Course Title": "Node B S2020",
+    "Course ID": "recsNDMWrmcKr5bTd",
+    "Instructor": "Reilly",
+    "Instructor Email": "reilly@hackcville.com",
+    "paceAvg": 3,
+    "understandAvg": 3.25
+  },
+  {
+    "Course Title": "Node Lite A S2020",
+    "Course ID": "recPUlSDV6EEa3gsl",
+    "Instructor": "Anya",
+    "Instructor Email": "anya@hackcville.com",
+    "paceAvg": 2,
+    "understandAvg": 4
+  },
+  {
+    "Course Title": "Source A S2020",
+    "Course ID": "recSFA676rpeVHIBd",
+    "Instructor": "Clay",
+    "Instructor Email": "clay@hackcville.com",
+    "paceAvg": 3,
+    "understandAvg": 3.75
+  },
+  {
+    "Course Title": "Source Lite A S2020",
+    "Course ID": "recqWusckYhHZbsKz",
+    "Instructor": "Natalia",
+    "Instructor Email": "natalia@hackcville.com",
+    "paceAvg": 3.1666666666666665,
+    "understandAvg": 3
+  },
+  {
+    "Course Title": "Storyboard A S2020",
+    "Course ID": "recN49S4TwR9N7RmO",
+    "Instructor": "Anna",
+    "Instructor Email": "anna.brown@hackcville.com",
+    "paceAvg": 2.5,
+    "understandAvg": 3.75
+  },
+  {
+    "Course Title": "Vector A S2020",
+    "Course ID": "recRnWnxbSboBSpbe",
+    "Instructor": "Lauren",
+    "Instructor Email": "lauren.budreau@hackcville.com",
+    "paceAvg": 2.6666666666666665,
+    "understandAvg": 2.6666666666666665
+  },
+  {
+    "Course Title": "Wireframe A S2020",
+    "Course ID": "recNyJLOi9Qq5gBYZ",
+    "Instructor": "Shawn",
+    "Instructor Email": "shawn@hackcville.com",
+    "paceAvg": 3,
+    "understandAvg": 3.3333333333333335
+  }
+]
