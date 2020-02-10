@@ -155,7 +155,6 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
     .eachPage((records, fetchNextPage) => {
       records.forEach(record => {
         student_name = record.get("Full Name");
-        student_course = record.get("Course + Section");
         student_link.push(record.id);
       });
       fetchNextPage();
@@ -173,7 +172,6 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
               "Understanding Rating": Number(payload.submission.understanding),
               "Enjoyment Rating": Number(payload.submission.enjoyment),
               Feedback: payload.submission.feedback,
-              Course: student_course[0],
               "Student Link": student_link
             }
           }
