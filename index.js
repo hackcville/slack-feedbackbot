@@ -172,7 +172,8 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
               "Understanding Rating": Number(payload.submission.understanding),
               "Enjoyment Rating": Number(payload.submission.enjoyment),
               Feedback: payload.submission.feedback,
-              "Student Link": student_link
+              "Student Link": student_link,
+              Week: getWeekNumber()
             }
           }
         ],
@@ -199,3 +200,10 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
     });
   })();
 });
+
+getWeekNumber = () => {
+  const startDate = Date.UTC(2020, 0, 26);
+  const today = Date.now();
+  let weeksBetween = Math.floor((today - startDate) / 604800000); //604,800,000 is the number of milliseconds per week
+  return weeksBetween + 1;
+};
