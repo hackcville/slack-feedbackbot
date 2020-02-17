@@ -29,15 +29,15 @@ const organize_records = arr_of_records => {
     if (course_list.indexOf(record.course_id) == -1) {
       reformatted.push({
         id: record.course_id,
-        fields: { [week_field]: [record.record_id] }
+        fields: { [week_field]: [record.student_id] }
       });
       course_list.push(record.course_id);
     } else {
       reformatted.forEach(ele => {
         if (ele.id == record.course_id) {
           ele.fields[week_field]
-            ? ele.fields[week_field].push(record.record_id)
-            : (ele.fields[week_field] = [record.record_id]);
+            ? ele.fields[week_field].push(record.student_id)
+            : (ele.fields[week_field] = [record.student_id]);
         }
       });
     }
@@ -55,9 +55,8 @@ base("Spring 2020 Slackbot Feedback")
   .eachPage((records, fetchNextPage) => {
     records.forEach(record => {
       const feedback_record = {
-        record_id: record.getId().toString(),
         course_id: record.get("Course Link").toString(),
-        student_id: record.get("Student Link"),
+        student_id: record.get("Student Link").toString(),
         week_num: record.get("Week").toString()
       };
       feedback_records.push(feedback_record);
