@@ -42,67 +42,70 @@ const getWeekNumber = () => {
   return weeksBetween + 1;
 };
 
-var attended_students = [];
-var completed_feedback_students = [];
-
-base("Spring 2020 Students")
-  .select({
-    view: "Grid view - don't touch",
-    fields: [
-      "Full Name",
-      "Slack ID",
-      "Course + Section",
-      "W" + getWeekNumber()
-    ],
-    filterByFormula:
-      "AND(NOT({Course + Section} = ''), NOT({Slack ID} = ''), ({W" +
-      getWeekNumber() +
-      "} = 'Attended'))"
-  })
-  .eachPage(
-    (records, fetchNextPage) => {
+const getAttendedStudents = async () => {
+  var attended_students = [];
+  base("Spring 2020 Students")
+    .select({
+      view: "Grid view - don't touch",
+      fields: [
+        "Full Name",
+        "Slack ID",
+        "Course + Section",
+        "W" + getWeekNumber()
+      ],
+      filterByFormula:
+        "AND(NOT({Course + Section} = ''), NOT({Slack ID} = ''), ({W" +
+        getWeekNumber() +
+        "} = 'Attended'))"
+    })
+    .eachPage((records, fetchNextPage) => {
       records.forEach(record => {
         const student_data = {
           name: record.get("Full Name"),
+          student_id: record.getId(),
           slack_id: record.get("Slack ID"),
           course: record.get("Course + Section")
         };
         attended_students.push(student_data);
       });
       fetchNextPage();
-    },
-    function done(err) {
-      if (err) {
-        console.error(err);
-        return;
+    })
+    .then(() => {
+      function done(err) {
+        if (err) {
+          console.error(err);
+          return;
+        }
       }
-    }
-  );
+      return attended_students;
+    });
+};
 
-base("Courses")
-  .select({
-    view: "All Courses",
-    fields: ["Course Title", "W" + getWeekNumber() + " Feedback"]
-  })
-  .eachPage(
-    (records, fetchNextPage) => {
+const getAlreadySubmitted = async () => {
+  var completed_feedback_students = {};
+  base("Courses")
+    .select({
+      view: "All Courses",
+      fields: ["Course Title", "W" + getWeekNumber() + " Feedback"]
+    })
+    .eachPage((records, fetchNextPage) => {
       records.forEach(record => {
-        const course_data = {
-          course_name: record.get("Course Title"),
-          already_submitted: record.get("W" + getWeekNumber() + " Feedback")
-        };
-        completed_feedback_students.push(course_data);
-        console.log(course_data);
+        let course_id = record.getId();
+        let already_submitted = record.get("W" + getWeekNumber() + " Feedback");
+        completed_feedback_students[course_id] = already_submitted;
       });
       fetchNextPage();
-    },
-    function done(err) {
-      if (err) {
-        console.error(err);
-        return;
+    })
+    .then(() => {
+      function done(err) {
+        if (err) {
+          console.error(err);
+          return;
+        }
       }
-    }
-  );
+      return completed_feedback_students;
+    });
+};
 /*
     .then(() => {
       courses.forEach(course => {
@@ -168,3 +171,23 @@ base("Courses")
 scheduleMessages();
 
 */
+
+//create a main function to do all the methods
+const bumpSurvey = async () => {
+  let delinquents = [];
+  await getAttendedStudents();
+  await getAlreadySubmitted();
+  attended_students.forEach(student => {
+    if (
+      !completed_feedback_students[student.course_id].includes(
+        student.student_id
+      )
+    ) {
+      console.log(student);
+    }
+  });
+};
+
+//Where we do all the actual stuff
+
+bumpSurvey();
