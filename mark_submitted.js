@@ -45,45 +45,44 @@ const organize_records = arr_of_records => {
   return reformatted;
 };
 
-base("Spring 2020 Slackbot Feedback")
-  .select({
-    view: "Grid view",
-    fields: ["Student Link", "Course Link", "Week", "Name"],
-    filterByFormula:
-      "AND(NOT({Course Link} = ''), NOT({SlackID} = ''), NOT({Name} = ''))"
-  })
-  .eachPage((records, fetchNextPage) => {
-    records.forEach(record => {
-      const feedback_record = {
-        course_id: record.get("Course Link").toString(),
-        student_id: record.get("Student Link").toString(),
-        week_num: record.get("Week").toString()
-      };
-      feedback_records.push(feedback_record);
+const do_the_thing = () => {
+  base("Spring 2020 Slackbot Feedback")
+    .select({
+      view: "Grid view",
+      fields: ["Student Link", "Course Link", "Week", "Name"],
+      filterByFormula:
+        "AND(NOT({Course Link} = ''), NOT({SlackID} = ''), NOT({Name} = ''))"
+    })
+    .eachPage((records, fetchNextPage) => {
+      records.forEach(record => {
+        const feedback_record = {
+          course_id: record.get("Course Link").toString(),
+          student_id: record.get("Student Link").toString(),
+          week_num: record.get("Week").toString()
+        };
+        feedback_records.push(feedback_record);
+      });
+      fetchNextPage();
+    })
+    .then(() => {
+      give_this_to_airtable = organize_records(feedback_records);
+      //Airtable only lets you update 10 records at a time, but there are 12 courses, so we have to update the records in two goes
+      base("Courses").update(give_this_to_airtable.slice(0, 5), function(err) {
+        if (err) {
+          console.error(err);
+          return;
+        }
+      });
+      base("Courses").update(give_this_to_airtable.slice(6, 12), function(err) {
+        if (err) {
+          console.error(err);
+          return;
+        }
+      });
+    })
+    .catch(err => {
+      console.log(err);
     });
-    fetchNextPage();
-  })
-  .then(() => {
-    give_this_to_airtable = organize_records(feedback_records);
-    //Airtable only lets you update 10 records at a time, but there are 12 courses, so we have to update the records in two goes
-    base("Courses")
-      .update(give_this_to_airtable.slice(0, 5), function(err) {
-        if (err) {
-          console.error(err);
-          return;
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
-    base("Courses")
-      .update(give_this_to_airtable.slice(6, 12), function(err) {
-        if (err) {
-          console.error(err);
-          return;
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  });
+};
+
+do_the_thing();
