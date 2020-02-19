@@ -64,16 +64,20 @@ const do_the_thing = async () => {
       });
       fetchNextPage();
     })
-    .then(() => {
+    .then(async () => {
       give_this_to_airtable = organize_records(feedback_records);
       //Airtable only lets you update 10 records at a time, but there are 12 courses, so we have to update the records in two goes
-      await base("Courses").update(give_this_to_airtable.slice(0, 5), function(err) {
+      await base("Courses").update(give_this_to_airtable.slice(0, 5), function(
+        err
+      ) {
         if (err) {
           console.error(err);
           return;
         }
       });
-      await base("Courses").update(give_this_to_airtable.slice(6, 12), function(err) {
+      await base("Courses").update(give_this_to_airtable.slice(6, 12), function(
+        err
+      ) {
         if (err) {
           console.error(err);
           return;
