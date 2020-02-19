@@ -43,8 +43,8 @@ const getWeekNumber = () => {
 };
 
 const getAttendedStudents = async () => {
-  var attended_students = [];
-  base("Spring 2020 Students")
+  let attended_students = [];
+  await base("Spring 2020 Students")
     .select({
       view: "Grid view - don't touch",
       fields: [
@@ -71,6 +71,7 @@ const getAttendedStudents = async () => {
       fetchNextPage();
     })
     .then(() => {
+      console.log("attended done");
       function done(err) {
         if (err) {
           console.error(err);
@@ -82,8 +83,8 @@ const getAttendedStudents = async () => {
 };
 
 const getAlreadySubmitted = async () => {
-  var completed_feedback_students = {};
-  base("Courses")
+  let completed_feedback_students = {};
+  await base("Courses")
     .select({
       view: "All Courses",
       fields: ["Course Title", "W" + getWeekNumber() + " Feedback"]
@@ -97,6 +98,7 @@ const getAlreadySubmitted = async () => {
       fetchNextPage();
     })
     .then(() => {
+      console.log("submitted done");
       function done(err) {
         if (err) {
           console.error(err);
@@ -175,17 +177,18 @@ scheduleMessages();
 //create a main function to do all the methods
 const bumpSurvey = async () => {
   let delinquents = [];
-  await getAttendedStudents();
-  await getAlreadySubmitted();
-  attended_students.forEach(student => {
-    if (
-      !completed_feedback_students[student.course_id].includes(
-        student.student_id
-      )
-    ) {
-      console.log(student);
-    }
+  console.log("1");
+  let attended = getAttendedStudents();
+  console.log(attended);
+  console.log("2");
+  let submitted = getAlreadySubmitted();
+  console.log(submitted);
+  console.log("3");
+
+  await Promise.all([attended, submitted]).then(values => {
+    console.log(values);
   });
+  console.log("4");
 };
 
 //Where we do all the actual stuff
