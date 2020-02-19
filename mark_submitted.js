@@ -45,8 +45,8 @@ const organize_records = arr_of_records => {
   return reformatted;
 };
 
-const do_the_thing = () => {
-  base("Spring 2020 Slackbot Feedback")
+const do_the_thing = async () => {
+  await base("Spring 2020 Slackbot Feedback")
     .select({
       view: "Grid view",
       fields: ["Student Link", "Course Link", "Week", "Name"],
@@ -67,13 +67,13 @@ const do_the_thing = () => {
     .then(() => {
       give_this_to_airtable = organize_records(feedback_records);
       //Airtable only lets you update 10 records at a time, but there are 12 courses, so we have to update the records in two goes
-      base("Courses").update(give_this_to_airtable.slice(0, 5), function(err) {
+      await base("Courses").update(give_this_to_airtable.slice(0, 5), function(err) {
         if (err) {
           console.error(err);
           return;
         }
       });
-      base("Courses").update(give_this_to_airtable.slice(6, 12), function(err) {
+      await base("Courses").update(give_this_to_airtable.slice(6, 12), function(err) {
         if (err) {
           console.error(err);
           return;
