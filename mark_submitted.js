@@ -66,20 +66,24 @@ base("Spring 2020 Slackbot Feedback")
   .then(() => {
     give_this_to_airtable = organize_records(feedback_records);
     //Airtable only lets you update 10 records at a time, but there are 12 courses, so we have to update the records in two goes
-    base("Courses").update(give_this_to_airtable.slice(0, 5), function(err) {
-      function done(err) {
+    base("Courses")
+      .update(give_this_to_airtable.slice(0, 5), function(err) {
         if (err) {
           console.error(err);
           return;
         }
-      }
-    });
-    base("Courses").update(give_this_to_airtable.slice(6, 12), function(err) {
-      function done(err) {
+      })
+      .catch(err => {
+        console.log(err);
+      });
+    base("Courses")
+      .update(give_this_to_airtable.slice(6, 12), function(err) {
         if (err) {
           console.error(err);
           return;
         }
-      }
-    });
+      })
+      .catch(err => {
+        console.log(err);
+      });
   });
