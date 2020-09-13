@@ -41,7 +41,7 @@ app.listen(port, () => {
 });
 
 //https://api.slack.com/events/app_mention
-slackEvents.on("app_mention", event => {
+slackEvents.on("app_mention", (event) => {
   //template for message with button to survey
   const bot_feedback_message = {
     token: SLACK_BOT_TOKEN,
@@ -59,22 +59,24 @@ slackEvents.on("app_mention", event => {
             name: "feedback_button",
             text: "Begin Survey!",
             type: "button",
-            value: "feedback"
-          }
-        ]
-      }
-    ]
+            value: "feedback",
+          },
+        ],
+      },
+    ],
   };
 
   (async () => {
     // https://api.slack.com/methods/chat.postMessage
-    const res = await web.chat.postMessage(bot_feedback_message).catch(err => {
-      console.log(err);
-    });
+    const res = await web.chat
+      .postMessage(bot_feedback_message)
+      .catch((err) => {
+        console.log(err);
+      });
   })();
 });
 
-slackInteractions.action({ type: "button" }, payload => {
+slackInteractions.action({ type: "button" }, (payload) => {
   //template for feedback survey
   const feedback_dialog = {
     token: SLACK_BOT_TOKEN,
@@ -94,8 +96,8 @@ slackInteractions.action({ type: "button" }, payload => {
             { label: "2", value: 2 },
             { label: "3", value: 3 },
             { label: "4", value: 4 },
-            { label: "5", value: 5 }
-          ]
+            { label: "5", value: 5 },
+          ],
         },
         {
           label: "My own understanding of the material is...",
@@ -107,8 +109,8 @@ slackInteractions.action({ type: "button" }, payload => {
             { label: "2", value: 2 },
             { label: "3", value: 3 },
             { label: "4", value: 4 },
-            { label: "5", value: 5 }
-          ]
+            { label: "5", value: 5 },
+          ],
         },
         {
           label: "How are you enjoying the course?",
@@ -120,28 +122,28 @@ slackInteractions.action({ type: "button" }, payload => {
             { label: "2", value: 2 },
             { label: "3", value: 3 },
             { label: "4", value: 4 },
-            { label: "5", value: 5 }
-          ]
+            { label: "5", value: 5 },
+          ],
         },
         {
           label: "How can we improve your experience?",
           type: "textarea",
           name: "feedback",
-          hint: "Tell us what you think..."
-        }
-      ]
-    })
+          hint: "Tell us what you think...",
+        },
+      ],
+    }),
   };
 
   (async () => {
     //https://api.slack.com/methods/dialog.open
-    const res = await web.dialog.open(feedback_dialog).catch(err => {
+    const res = await web.dialog.open(feedback_dialog).catch((err) => {
       console.log(err);
     });
   })();
 });
 
-slackInteractions.action({ type: "dialog_submission" }, payload => {
+slackInteractions.action({ type: "dialog_submission" }, (payload) => {
   //retrieve student records from Airtable
   var student_name = "";
   var student_course = "";
@@ -150,10 +152,10 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
     .select({
       maxRecords: 1,
       view: "Grid view - don't touch",
-      filterByFormula: "{Slack ID}= '" + payload.user.id + "'"
+      filterByFormula: "{Slack ID}= '" + payload.user.id + "'",
     })
     .eachPage((records, fetchNextPage) => {
-      records.forEach(record => {
+      records.forEach((record) => {
         student_name = record.get("Full Name");
         student_link.push(record.id);
       });
@@ -173,11 +175,11 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
               "Enjoyment Rating": Number(payload.submission.enjoyment),
               Feedback: payload.submission.feedback,
               "Student Link": student_link,
-              Week: getWeekNumber()
-            }
-          }
+              Week: getWeekNumber(),
+            },
+          },
         ],
-        function(err) {
+        function (err) {
           if (err) {
             console.error(err);
           }
@@ -190,14 +192,16 @@ slackInteractions.action({ type: "dialog_submission" }, payload => {
     token: SLACK_BOT_TOKEN,
     channel: payload.channel.id,
     text: `Thanks! <@${payload.user.id}>`,
-    link_names: true
+    link_names: true,
   };
 
   (async () => {
     //https://api.slack.com/methods/chat.postMessage
-    const res = await web.chat.postMessage(bot_response_message).catch(err => {
-      console.log(err);
-    });
+    const res = await web.chat
+      .postMessage(bot_response_message)
+      .catch((err) => {
+        console.log(err);
+      });
   })();
 });
 
