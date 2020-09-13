@@ -148,7 +148,7 @@ slackInteractions.action({ type: "dialog_submission" }, (payload) => {
   var student_name = "";
   var student_course = "";
   var student_link = [];
-  base("Spring 2020 Students")
+  base("Fall 2020 Students")
     .select({
       maxRecords: 1,
       view: "Grid view - don't touch",
