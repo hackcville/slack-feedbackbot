@@ -16,7 +16,7 @@ const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_LIVE;
-const TABLE_NAME = "Spring 2020 Slackbot Feedback";
+const TABLE_NAME = "Fall 2020 Slackbot Feedback";
 
 const Airtable = require("airtable");
 const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
@@ -206,7 +206,7 @@ slackInteractions.action({ type: "dialog_submission" }, (payload) => {
 });
 
 getWeekNumber = () => {
-  const startDate = Date.UTC(2020, 0, 26);
+  const startDate = Date.UTC(2020, 9, 13);
   const today = Date.now();
   let weeksBetween = Math.floor((today - startDate) / 604800000); //604,800,000 is the number of milliseconds per week
   return weeksBetween + 1;
