@@ -20,7 +20,6 @@ var payload = {
 };
 
 var student_name = "";
-var student_course = "";
 var student_link = [];
 
 base("Fall 2020 Students")
@@ -32,14 +31,12 @@ base("Fall 2020 Students")
   .eachPage((records, fetchNextPage) => {
     records.forEach((record) => {
       student_name = record.get("Full Name");
-      student_course = record.get("Course + Section");
       student_link.push(record.id);
     });
     fetchNextPage();
   })
   .then(() => {
     //record the dialog response in Airtable
-    console.log("student course is ", student_course[0]);
     base(TABLE_NAME).create(
       [
         {
