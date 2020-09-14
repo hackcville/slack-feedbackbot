@@ -147,46 +147,44 @@ slackInteractions.action({ type: "dialog_submission" }, (payload) => {
   //retrieve student records from Airtable
   var student_name = "";
   var student_link = [];
-  
   base("Fall 2020 Students")
-  .select({
-    maxRecords: 1,
-    view: "Grid view - don't touch",
-    filterByFormula: "{Slack ID}= '" + payload.user.id + "'",
-  })
-  .eachPage((records, fetchNextPage) => {
-    records.forEach((record) => {
-      student_name = record.get("Full Name");
-      student_link.push(record.id);
-    });
-    fetchNextPage();
-  })
-  .then(() => {
-    //record the dialog response in Airtable
-    base(TABLE_NAME).create(
-      [
-        {
-          fields: {
-            Name: student_name,
-            SlackID: payload.user.id,
-            "Pace Rating": Number(payload.submission.pace),
-            "Understanding Rating": Number(payload.submission.understanding),
-            "Enjoyment Rating": Number(payload.submission.enjoyment),
-            Feedback: payload.submission.feedback,
-            "Student Link": student_link,
-            Week: getWeekNumber(),
+    .select({
+      maxRecords: 1,
+      view: "Grid view - don't touch",
+      filterByFormula: "{Slack ID}= '" + payload.user.id + "'",
+    })
+    .eachPage((records, fetchNextPage) => {
+      records.forEach((record) => {
+        student_name = record.get("Full Name");
+        student_link.push(record.id);
+      });
+      fetchNextPage();
+    })
+    .then(() => {
+      //record the dialog response in Airtable
+      base(TABLE_NAME).create(
+        [
+          {
+            fields: {
+              Name: student_name,
+              SlackID: payload.user.id,
+              "Pace Rating": Number(payload.submission.pace),
+              "Understanding Rating": Number(payload.submission.understanding),
+              "Enjoyment Rating": Number(payload.submission.enjoyment),
+              Feedback: payload.submission.feedback,
+              "Student Link": student_link,
+              Week: getWeekNumber(),
+            },
           },
-        },
-      ],
-      function (err) {
-        if (err) {
-          console.error(err);
-          return;
+        ],
+        function (err) {
+          if (err) {
+            console.error(err);
+            return;
+          }
         }
-      }
-    )
-  })
-})
+      );
+    });
 
   //template for bot response to completed form
   const bot_response_message = {
