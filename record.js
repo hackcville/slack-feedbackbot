@@ -1,9 +1,13 @@
+require("dotenv").config();
+
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID_PROD;
-const TABLE_NAME = "Spring 2020 Slackbot Feedback";
+const AIRTABLE_BASE_ID_LIVE = process.env.AIRTABLE_BASE_ID_LIVE;
+const TABLE_NAME = "Fall 2020 Slackbot Feedback";
 
 var Airtable = require("airtable");
-var base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
+var base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(
+  AIRTABLE_BASE_ID_LIVE
+);
 
 var payload = {
   user: { id: "UETEHA6NN" },
@@ -11,22 +15,25 @@ var payload = {
     pace: 3,
     understanding: 3,
     enjoyment: 3,
-    feedback: "testing 123"
-  }
+    feedback: "testing 123",
+  },
 };
 
 var student_name = "";
 var student_course = "";
-base("Spring 2020 Students")
+var student_link = [];
+
+base("Fall 2020 Students")
   .select({
     maxRecords: 1,
-    view: "Grid View - don't touch",
-    filterByFormula: "{Slack ID}= '" + payload.user.id + "'"
+    view: "Grid view - don't touch",
+    filterByFormula: "{Slack ID}= '" + payload.user.id + "'",
   })
   .eachPage((records, fetchNextPage) => {
-    records.forEach(record => {
+    records.forEach((record) => {
       student_name = record.get("Full Name");
       student_course = record.get("Course + Section");
+      student_link.push(record.id);
     });
     fetchNextPage();
   })
@@ -43,11 +50,12 @@ base("Spring 2020 Students")
             "Understanding Rating": Number(payload.submission.understanding),
             "Enjoyment Rating": Number(payload.submission.enjoyment),
             Feedback: payload.submission.feedback,
-            Course: student_course[0]
-          }
-        }
+            "Student Link": student_link,
+            Week: getWeekNumber(),
+          },
+        },
       ],
-      function(err, records) {
+      function (err) {
         if (err) {
           console.error(err);
           return;
@@ -55,3 +63,10 @@ base("Spring 2020 Students")
       }
     );
   });
+
+getWeekNumber = () => {
+  const startDate = Date.UTC(2020, 8, 13);
+  const today = Date.now();
+  let weeksBetween = Math.floor((today - startDate) / 604800000); //604,800,000 is the number of milliseconds per week
+  return weeksBetween + 1;
+};

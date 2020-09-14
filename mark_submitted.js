@@ -21,19 +21,19 @@ const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(
 
 var feedback_records = [];
 
-const organize_records = arr_of_records => {
+const organize_records = (arr_of_records) => {
   var reformatted = [];
   var course_list = [];
-  arr_of_records.forEach(record => {
+  arr_of_records.forEach((record) => {
     let week_field = "W" + record.week_num + " Feedback";
     if (course_list.indexOf(record.course_id) == -1) {
       reformatted.push({
         id: record.course_id,
-        fields: { [week_field]: [record.student_id] }
+        fields: { [week_field]: [record.student_id] },
       });
       course_list.push(record.course_id);
     } else {
-      reformatted.forEach(ele => {
+      reformatted.forEach((ele) => {
         if (ele.id == record.course_id) {
           ele.fields[week_field]
             ? ele.fields[week_field].push(record.student_id)
@@ -51,14 +51,14 @@ const do_the_thing = () => {
       view: "Grid view",
       fields: ["Student Link", "Course Link", "Week", "Name"],
       filterByFormula:
-        "AND(NOT({Course Link} = ''), NOT({SlackID} = ''), NOT({Name} = ''))"
+        "AND(NOT({Course Link} = ''), NOT({SlackID} = ''), NOT({Name} = ''))",
     })
     .eachPage((records, fetchNextPage) => {
-      records.forEach(record => {
+      records.forEach((record) => {
         const feedback_record = {
           course_id: record.get("Course Link").toString(),
           student_id: record.get("Student Link").toString(),
-          week_num: record.get("Week").toString()
+          week_num: record.get("Week").toString(),
         };
         feedback_records.push(feedback_record);
       });
@@ -67,20 +67,22 @@ const do_the_thing = () => {
     .then(() => {
       give_this_to_airtable = organize_records(feedback_records);
       //Airtable only lets you update 10 records at a time, but there are 12 courses, so we have to update the records in two goes
-      base("Courses").update(give_this_to_airtable.slice(0, 5), function(err) {
+      base("Courses").update(give_this_to_airtable.slice(0, 5), function (err) {
         if (err) {
           console.error(err);
           return;
         }
       });
-      base("Courses").update(give_this_to_airtable.slice(6, 12), function(err) {
+      base("Courses").update(give_this_to_airtable.slice(6, 12), function (
+        err
+      ) {
         if (err) {
           console.error(err);
           return;
         }
       });
     })
-    .catch(err => {
+    .catch((err) => {
       console.log(err);
     });
 };

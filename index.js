@@ -179,7 +179,7 @@ slackInteractions.action({ type: "dialog_submission" }, (payload) => {
             },
           },
         ],
-        function (err) {
+        function done(err) {
           if (err) {
             console.error(err);
           }
@@ -206,7 +206,7 @@ slackInteractions.action({ type: "dialog_submission" }, (payload) => {
 });
 
 getWeekNumber = () => {
-  const startDate = Date.UTC(2020, 9, 13);
+  const startDate = Date.UTC(2020, 8, 13);
   const today = Date.now();
   let weeksBetween = Math.floor((today - startDate) / 604800000); //604,800,000 is the number of milliseconds per week
   return weeksBetween + 1;
